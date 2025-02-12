@@ -19,7 +19,7 @@ S3_BUCKET_Marker = "markers-for-batchesg6"
 S3_REGION = "us-east-1"
 AWS_ACCESS_KEY_ID = "xxxxxxxx"
 AWS_SECRET_ACCESS_KEY = "xxxxxxx"
-AWS_SESSION_TOKEN = ""
+AWS_SESSION_TOKEN = "xxxxx"
 
 # Initialize the S3 client with environment variables
 s3_client = boto3.client(
