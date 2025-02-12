@@ -1,47 +1,154 @@
 import boto3
 import pandas as pd
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
 from io import BytesIO
+import sqlite3
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 
-# Secret key for session management (for authentication)
-import os
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))  # fallback to random key if env var is not set
-# Set to a random secret key in production
+app.config['SECRET_KEY'] = 'FLASK_SECRET_KEY1'
 
-# AWS S3 Configuration
-S3_BUCKET = "placement-trends-data2"
-S3_BUCKET_Marker = "markers-for-batches2"
-S3_REGION = "us-east-1"  # Change to your AWS region
-s3_client = boto3.client('s3')
 
-# AWS Credentials (replace with environment variables for security purposes in production)
+load_dotenv()
+
+S3_BUCKET = "placecdment-trends-datag6"
+S3_BUCKET_Marker = "markers-for-batchesg6"
+S3_REGION = "us-east-1"
+AWS_ACCESS_KEY_ID = "xxxxx"
+AWS_SECRET_ACCESS_KEY = "xxxxx"
+AWS_SESSION_TOKEN = "xxxxxxx"
+
+# Initialize the S3 client with environment variables
 s3_client = boto3.client(
     's3',
-    aws_access_key_id="xxx",
-    aws_secret_access_key="xxxxx",
-    aws_session_token="xxx",
-    region_name="us-east-1"
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    aws_session_token=AWS_SESSION_TOKEN,
+    region_name=S3_REGION
 )
 
 FILE_TYPES = ["DAC", "DBDA", "Registration", "MasterData", "Placement"]
 ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".xls"}
 
-# Simple hardcoded credentials (for demonstration, replace with a database or other secure method)
-USER_CREDENTIALS = {
-    "admin": "password123"  # Username: admin, Password: password123 (for example purposes)
-}
+# Database setup for user authentication
+def init_db():
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
+init_db()
 
-# Function to check file extension
+# Utility functions
 def allowed_file(filename):
     return "." in filename and ("." + filename.rsplit(".", 1)[-1].lower()) in ALLOWED_EXTENSIONS
 
-
-# Authentication check for route access
 def is_logged_in():
     return "logged_in" in session and session["logged_in"]
+
+
+def forDACResult(file):
+    file_ext = file.filename.rsplit(".", 1)[-1].lower()
+    engine = "xlrd" if file_ext == "xls" else "openpyxl"
+
+    df = pd.read_excel(file, header=[0, 1], engine=engine)
+    df.columns = [
+        f"{str(col[0]).strip()}_{str(col[1]).strip()}" if isinstance(col, tuple) and col[0] and col[1]
+        else str(col[1]).strip() if isinstance(col, tuple) and col[1]
+        else str(col[0]).strip()
+        for col in df.columns
+    ]
+
+    column_mapping = {
+        "unnamed: 0_level_0_prn": "PRN",
+        "total_800": "Total800",
+        "total_600": "Total800",
+        "web-based java programming_total/600": "Total800",
+        "web-based java programming_total/800": "Total800",
+        "total_%": "CDAC_Percentage",
+        "web-based java programming_%": "CDAC_Percentage",
+        "total_grade": "Grade",
+        "web-based java programming_grade": "Grade",
+        "total_result": "Result",
+        "web-based java programming_result": "Result",
+        "total_apti & ec grade": "Apti_EC_Grade",
+        "web-based java programming_apti & ec grade": "Apti_EC_Grade",
+        "total_project grade": "Project_Grade",
+        "web-based java programming_project grade": "Project_Grade",
+
+
+    }
+    df.rename(columns=lambda x: column_mapping.get(x.lower(), x), inplace=True)
+
+    expected_columns = ["PRN", "Total800", "CDAC_Percentage", "Grade", "Result", "Apti_EC_Grade", "Project_Grade"]
+    for col in expected_columns:
+        if col not in df.columns:
+            df[col] = None
+
+    subject_total_columns = [col for col in df.columns if "Total" in col and col not in ["Total800"]]
+    df["Total800"] = df[subject_total_columns].apply(pd.to_numeric, errors='coerce').sum(axis=1)
+
+    return df[expected_columns]
+
+def forDBDAResult(file):
+    file_ext = file.filename.rsplit(".", 1)[-1].lower()
+    engine = "xlrd" if file_ext == "xls" else "openpyxl"
+
+    df = pd.read_excel(file, header=[0, 1], engine=engine)
+    df.columns = [
+        f"{str(col[0]).strip()}_{str(col[1]).strip()}" if isinstance(col, tuple) and col[0] and col[1]
+        else str(col[1]).strip() if isinstance(col, tuple) and col[1]
+        else str(col[0]).strip()
+        for col in df.columns
+    ]
+
+    column_mapping = {
+        "Unnamed: 0_level_0_PRN": "PRN",
+        "total_800": "Total800",
+        "total_600": "Total800",
+        "total_%": "CDAC_Percentage",
+        "total_grade": "Grade",
+        "total_result": "Result",
+        "total_apti & ec grade": "Apti_EC_Grade",
+        "total_project grade": "Project_Grade",
+
+        "Practical Machine learning_Total/600": "Total800",
+        "Practical Machine learning_%": "CDAC_Percentage",
+        "Practical Machine learning_Apti & EC Grade": "Apti_EC_Grade",
+        "Practical Machine Learning_Apti & EC Grade": "Apti_EC_Grade",
+
+        "Practical Machine learning_Result": "Result",
+        "Practical Machine Learning_Project Grade": "Project_Grade",
+
+        "Practical Machine Learning_Total/800": "Total800",
+        "Practical Machine Learning_Grade": "Grade",
+        "Practical Machine Learning_Result": "Result",
+
+        "Practical Machine Learning_%": "CDAC_Percentage",
+        "Practical Machine learning_Grade": "Grade",
+        "Practical Machine learning_Project Grade": "Project_Grade",
+
+    }
+    df.rename(columns=lambda x: column_mapping.get(x.strip(), x), inplace=True)
+
+    expected_columns = ["PRN", "Total800", "CDAC_Percentage", "Grade", "Result", "Apti_EC_Grade", "Project_Grade"]
+    for col in expected_columns:
+        if col not in df.columns:
+            df[col] = None  # Assign missing columns as empty
+    subject_total_columns = [col for col in df.columns if "Total" in col and col not in ["Total800"]]
+    df["Total800"] = df[subject_total_columns].apply(pd.to_numeric, errors='coerce').sum(axis=1)
+
+    return df[expected_columns]
 
 
 @app.route('/')
@@ -50,33 +157,70 @@ def index():
         return redirect(url_for('login'))
     return render_template('upload.html')
 
+def upload_marker_file(batch_name):
+    marker_key = f"{batch_name}.txt"
 
+    s3_client.put_object(Bucket=S3_BUCKET_Marker, Key=marker_key, Body="Batch upload complete")
+    print(f"Marker file uploaded: {marker_key}")
+
+
+
+# User registration
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        if password != confirm_password:
+            flash('Passwords do not match!', 'error')
+            return render_template('register.html')
+
+        hashed_password = generate_password_hash(password)
+
+        try:
+            conn = sqlite3.connect('users.db')
+            cursor = conn.cursor()
+            cursor.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, hashed_password))
+            conn.commit()
+            conn.close()
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
+            flash('Username already exists. Please choose a different one.', 'error')
+
+    return render_template('register.html')
+
+# User login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        # Check credentials
-        if USER_CREDENTIALS.get(username) == password:
+        conn = sqlite3.connect('users.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user[2], password):
             session['logged_in'] = True
+            flash('Login successful!', 'success')
             return redirect(url_for('index'))
         else:
-            return "Invalid credentials. Please try again.", 401
+            flash('Invalid credentials.', 'error')
     return render_template('login.html')
-
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
+    flash('Logged out successfully.', 'info')
     return redirect(url_for('login'))
-
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
-    if not is_logged_in():
-        return redirect(url_for('login'))
-
     batch_month = request.form.get('batch_month')
     batch_year = request.form.get('batch_year')
     if not batch_month or not batch_year:
@@ -125,16 +269,16 @@ def upload_files():
             else:
                 # Process normal files (DAC, DBDA, Registration)
                 if file_ext in {".xlsx", ".xls"}:
-                    if file_type == "DAC":
+                    if file_type=="DAC":
                         df = forDACResult(file)
-                    elif file_type == "DBDA":
+                    elif file_type=="DBDA":
                         df = forDBDAResult(file)
                     else:
                         df = pd.read_excel(file)
                     buffer = BytesIO()
                     df.to_csv(buffer, index=False)
                     buffer.seek(0)
-                    s3_key = f"{batch_name}/{file_type}_result.csv"
+                    s3_key = f"{batch_name}/{file_type}_Result.csv"
                     s3_client.upload_fileobj(buffer, S3_BUCKET, s3_key)
                 else:
                     s3_key = f"{batch_name}/{file_type}.csv"
@@ -148,27 +292,6 @@ def upload_files():
             return jsonify({"error": f"Failed to process {file_type}: {str(e)}"}), 500
 
     return jsonify({"message": "All files uploaded successfully", "files": uploaded_files}), 200
-
-
-# Function to process DAC result files
-def forDACResult(file):
-    df = pd.read_excel(file)
-    # Your specific processing logic for DAC files
-    return df
-
-# Function to process DBDA result files
-def forDBDAResult(file):
-    df = pd.read_excel(file)
-    # Your specific processing logic for DBDA files
-    return df
-
-# Function to upload marker file to S3
-def upload_marker_file(batch_name):
-    marker_data = {"batch_name": batch_name, "status": "uploaded"}
-    marker_buffer = BytesIO(str(marker_data).encode('utf-8'))
-    marker_key = f"{batch_name}/marker.json"
-    s3_client.upload_fileobj(marker_buffer, S3_BUCKET_Marker, marker_key)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
