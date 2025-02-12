@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Placement Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            width: 650px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .file-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .file-group input[type="file"] {
+            flex: 1;
+        }
+
+        .sheet-names {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        input {
+            width: 96%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #response {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+        .inline-form {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Adjust spacing between elements */
+        }
+
+        .inline-form label {
+            white-space: nowrap; /* Prevents label from wrapping */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Upload Placement Data</h2>
+        <form id="uploadForm" enctype="multipart/form-data" method="POST">
+
+            <div class="inline-form">
+                <label for="batch_month">Batch: </label>
+                <select id="batch_month" name="batch_month" required>
+                    <option value="">-- Select Batch --</option>
+                    <option value="Sept">September</option>
+                    <option value="Mar">March</option>
+                </select>
+
+                <label for="batch_year">Year:</label>
+                <input type="text" id="batch_year" name="batch_year" required pattern="\d{4}" placeholder="Enter Year (e.g., 2025)">
+            </div>
+
+            <br>
+            <div class="inline-form">
+                <label for="DAC">DAC File:</label>
+                <input type="file" id="DAC" name="DAC" accept=".csv, .xlsx, .xls" required>
+
+                <label for="DBDA">DBDA File:</label>
+                <input type="file" id="DBDA" name="DBDA" accept=".csv, .xlsx, .xls" required>
+            </div>
+            <label for="Registration">Registration File:</label>
+            <input type="file" id="Registration" name="Registration" accept=".csv, .xlsx, .xls" required>
+
+            <label for="MasterData">MasterData File:</label>
+            <div class="inline-form">
+                <input type="file" id="MasterData" name="MasterData" accept=".csv, .xlsx, .xls" required>
+                <input type="text" id="MasterData_DAC" name="MasterData_DAC" placeholder="Sheet Name for DAC (Optional)">
+                <input type="text" id="MasterData_DBDA" name="MasterData_DBDA" placeholder="Sheet Name for DBDA (Optional)">
+            </div>
+
+
+            <label for="Placement">Placement File:</label>
+            <div class="inline-form">
+            <input type="file" id="Placement" name="Placement" accept=".csv, .xlsx, .xls" required>
+            <input type="text" id="Placement_DAC" name="Placement_DAC" placeholder="Sheet Name for DAC (Optional)">
+            <input type="text" id="Placement_DBDA" name="Placement_DBDA" placeholder="Sheet Name for DBDA (Optional)">
+            </div>
+
+            <button type="button" onclick="uploadFiles()">Upload</button>
+        </form>
+
+        <div id="response"></div>
+    </div>
+
+    <script>
+        function uploadFiles() {
+            let form = document.getElementById("uploadForm");
+            let formData = new FormData(form);
+
+            if (!form.checkValidity()) {
+                alert("Please fill all fields and upload valid .csv, .xls, or .xlsx files!");
+                return;
+            }
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("response").innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
+</html>
