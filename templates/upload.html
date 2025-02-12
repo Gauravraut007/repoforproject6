@@ -5,107 +5,243 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Placement Data</title>
     <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #cc1d24, #0a1034); /* Primary Colors as Gradient */
             display: flex;
-            justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 20px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header img {
+            height: 70px; /* Adjust the size of the logo */
         }
 
         .container {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            width: 650px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            width: 800px;
+            animation: fadeIn 0.5s ease-in-out;
+            margin-top: 1.5cm;
         }
 
         h2 {
             text-align: center;
-            color: #333;
+            color: #0a1034; /* Dark Blue for heading */
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         label {
             font-weight: bold;
+            color: #cc1d24; /* Red for labels */
             display: block;
-            margin: 10px 0 5px;
+            margin: 15px 0 5px;
+            font-size: 0.95rem;
         }
 
-        .file-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .file-group input[type="file"] {
-            flex: 1;
-        }
-
-        .sheet-names {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 10px;
-        }
-        input {
-            width: 96%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        select {
+        input, select {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #cc1d24; /* Red border on focus */
+            box-shadow: 0 0 5px rgba(204, 29, 36, 0.5); /* Red glow on focus */
         }
 
         button {
             width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
+            padding: 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background-color: #cc1d24; /* Updated to primary color */
+            color: #ffffff;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 10px;
             cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background: #b11b21; /* Reverse Gradient on Hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         #response {
-            margin-top: 10px;
-            padding: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
-            font-size: 14px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 0.9rem;
             word-wrap: break-word;
         }
+
         .inline-form {
             display: flex;
             align-items: center;
-            gap: 10px; /* Adjust spacing between elements */
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
         .inline-form label {
-            white-space: nowrap; /* Prevents label from wrapping */
+            flex: 1;
+            font-weight: bold;
+            color: #cc1d24; /* Red for labels in inline form */
         }
+
+        .inline-form input, .inline-form select {
+            flex: 2;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .inline-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #cc1d24;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            display: none; /* Initially hidden */
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #logoutButton {
+            background: #cc1d24; /* Red color */
+            color: white;
+            width: 3cm;
+            padding: 10px 15px;
+            margin-right: 0.5cm;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: auto; /* Pushes the button to the right */
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+
+        #logoutButton:hover {
+            background: #0a1034; /* Dark blue on hover */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #logoutButton:active {
+            transform: translateY(2px); /* Button presses down on click */
+        }
+
+        #dashboardButton {
+            background: #cc1d24; /* Dark blue color */
+            color: white;
+            width: 5cm;
+            margin-right:0.5cm;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 0.5cm;
+            transition: background 0.3s ease;
+        }
+
+        #dashboardButton:hover {
+            background: #0a1034; /* Red on hover */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #dashboardButton:active {
+            transform: translateY(2px); /* Button presses down on click */
+        }
+
     </style>
 </head>
 <body>
+    <header style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div style="display: flex; align-items: center;">
+            <img src="static/images/smlogo.png" alt="App Logo" style="margin-right: 10px;">
+            <h1 style="color: #cc1d24; font-size: 1cm">Placement Trends Dashboard</h1>
+        </div>
+        <div class="header-buttons">
+            <button onclick="redirectToDashboard()" id="dashboardButton">View Dashboard</button>
+            <button onclick="logOut()" id="logoutButton">Log Out</button>
+        </div>
+    </header>
+
 
     <div class="container">
         <h2>Upload Placement Data</h2>
         <form id="uploadForm" enctype="multipart/form-data" method="POST">
 
             <div class="inline-form">
-                <label for="batch_month">Batch: </label>
+                <label for="batch_month">Batch:</label>
                 <select id="batch_month" name="batch_month" required>
                     <option value="">-- Select Batch --</option>
                     <option value="Sept">September</option>
@@ -113,10 +249,17 @@
                 </select>
 
                 <label for="batch_year">Year:</label>
-                <input type="text" id="batch_year" name="batch_year" required pattern="\d{4}" placeholder="Enter Year (e.g., 2025)">
+                <select id="batch_year" name="batch_year" required>
+                    <option value="">Select Year</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+
             </div>
 
-            <br>
             <div class="inline-form">
                 <label for="DAC">DAC File:</label>
                 <input type="file" id="DAC" name="DAC" accept=".csv, .xlsx, .xls" required>
@@ -124,6 +267,7 @@
                 <label for="DBDA">DBDA File:</label>
                 <input type="file" id="DBDA" name="DBDA" accept=".csv, .xlsx, .xls" required>
             </div>
+
             <label for="Registration">Registration File:</label>
             <input type="file" id="Registration" name="Registration" accept=".csv, .xlsx, .xls" required>
 
@@ -134,12 +278,11 @@
                 <input type="text" id="MasterData_DBDA" name="MasterData_DBDA" placeholder="Sheet Name for DBDA (Optional)">
             </div>
 
-
             <label for="Placement">Placement File:</label>
             <div class="inline-form">
-            <input type="file" id="Placement" name="Placement" accept=".csv, .xlsx, .xls" required>
-            <input type="text" id="Placement_DAC" name="Placement_DAC" placeholder="Sheet Name for DAC (Optional)">
-            <input type="text" id="Placement_DBDA" name="Placement_DBDA" placeholder="Sheet Name for DBDA (Optional)">
+                <input type="file" id="Placement" name="Placement" accept=".csv, .xlsx, .xls" required>
+                <input type="text" id="Placement_DAC" name="Placement_DAC" placeholder="Sheet Name for DAC (Optional)">
+                <input type="text" id="Placement_DBDA" name="Placement_DBDA" placeholder="Sheet Name for DBDA (Optional)">
             </div>
 
             <button type="button" onclick="uploadFiles()">Upload</button>
@@ -167,6 +310,15 @@
                 document.getElementById("response").innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
             })
             .catch(error => console.error("Error:", error));
+        }
+        function logOut() {
+            // This is where you will handle the logout functionality (e.g., redirect or clear session)
+            alert("Logging out...");  // Replace this with actual log-out code
+            window.location.href = "/logout"; // Example: Redirect to logout page
+        }
+        function redirectToDashboard() {
+            // Redirect to Power BI Dashboard
+            window.location.href = "https://app.powerbi.com"; // Replace with actual Power BI dashboard URL
         }
     </script>
 
