@@ -17,9 +17,9 @@ load_dotenv()
 S3_BUCKET = "placecdment-trends-datag6"
 S3_BUCKET_Marker = "markers-for-batchesg6"
 S3_REGION = "us-east-1"
-AWS_ACCESS_KEY_ID = "xxxxx"
-AWS_SECRET_ACCESS_KEY = "xxxxx"
-AWS_SESSION_TOKEN = "xxxxxxx"
+AWS_ACCESS_KEY_ID = "xxxxxxxx"
+AWS_SECRET_ACCESS_KEY = "xxxxxxx"
+AWS_SESSION_TOKEN = ""
 
 # Initialize the S3 client with environment variables
 s3_client = boto3.client(
@@ -294,4 +294,4 @@ def upload_files():
     return jsonify({"message": "All files uploaded successfully", "files": uploaded_files}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
