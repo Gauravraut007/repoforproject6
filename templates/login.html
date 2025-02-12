@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+     <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,66 +6,123 @@
     <title>Login</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-        h2 {
-            text-align: center;
+            background: linear-gradient(135deg, #cc1d24, #0a1034);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #333;
         }
+
+        .container {
+            background: #ffffff;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #0a1034;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
         label {
-            font-weight: bold;
             display: block;
-            margin: 10px 0 5px;
+            text-align: left;
+            font-size: 1rem;
+            margin-bottom: 0.6rem;
+            color: #374151;
+            font-weight: 500;
         }
+
         input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            width: 93%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #374151;
+            background-color: #f9fafb;
+            transition: all 0.3s ease;
         }
-        button {
+
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn, .create-user-btn {
             width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
+            padding: 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background-color: #cc1d24;
+            color: #ffffff;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 10px;
             cursor: pointer;
+            margin-top: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
-        button:hover {
-            background-color: #0056b3;
+
+        .btn:hover, .create-user-btn:hover {
+            background-color: #9e141b;
+            transform: scale(1.05);
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .footer-text {
+            font-size: 1rem;
+            color: #6b7280;
         }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h2>Login</h2>
-        <form method="POST">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+        <div class="left-section">
+            <h1>Login</h1>
+            <p>Please enter your user credentials.</p>
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" placeholder="Enter your UserId" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
 
-            <button type="submit">Login</button>
-        </form>
+                <button type="button" class="create-user-btn" onclick="window.location.href='/register'">Create an Account</button>
+                {% if error %}
+                    <p class="error">{{ error }}</p>
+                {% endif %}
+            </form>
+        </div>
+
     </div>
-
 </body>
 </html>
